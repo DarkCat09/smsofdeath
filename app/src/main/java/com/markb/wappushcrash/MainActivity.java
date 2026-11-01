@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(0xFFB0B0B0);
-        root.setPadding(48, 480, 48, 48);
+        root.setPadding(48, 48, 48, 48);
 
         TextView destLabel = new TextView(this);
         destLabel.setText("Target phone number:");
