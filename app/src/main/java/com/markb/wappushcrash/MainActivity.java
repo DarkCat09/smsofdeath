@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.SubscriptionInfo;
@@ -94,7 +95,7 @@ public class MainActivity extends Activity {
         scroll.addView(root, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         setContentView(scroll);
 
-        if (!isLollipop()) {
+        if (supportsPermissions()) {
             requestPermissions(new String[] {
                 Manifest.permission.SEND_SMS,
                 Manifest.permission.READ_PHONE_NUMBERS,
@@ -105,8 +106,8 @@ public class MainActivity extends Activity {
         populateSubsAndAutofill();
     }
 
-    private boolean isLollipop() {
-        return android.os.Build.VERSION.SDK_INT < 23;
+    private boolean supportsPermissions() {
+        return Build.VERSION.SDK_INT >= 23;
     }
 
     @Override
@@ -121,7 +122,7 @@ public class MainActivity extends Activity {
                 getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
             if (sm == null) return;
 
-            if (!isLollipop() && checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            if (supportsPermissions() && checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
                 status.setText("Grant READ_PHONE_STATE for SIM enumeration.");
                 return;
             }
@@ -176,7 +177,7 @@ public class MainActivity extends Activity {
      *   5. SubscriptionInfo.getNumber()                     — legacy fallback
      */
     private String resolveNumber(SubscriptionInfo s) {
-        if (isLollipop()) return null; // getPhoneNumber
+        if (Build.VERSION.SDK_INT < 33) return null; // getPhoneNumber is API 33
         if (s == null) return null;
         SubscriptionManager sm = (SubscriptionManager)
             getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
@@ -237,7 +238,7 @@ public class MainActivity extends Activity {
             status.setText("Enter target phone number first.");
             return;
         }
-        if (!isLollipop() && checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+        if (supportsPermissions() && checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
             status.setText("SEND_SMS not granted.");
             return;
         }
