@@ -41,7 +41,7 @@ adb logcat | grep -E 'NegativeArraySize|WapPushOverSms|com.android.phone'
 Expected: `FATAL EXCEPTION` in `com.android.phone` within ~1–2s and a PID change for
 that process, with a brief loss of signal.
 
-- `minSdk` 30, `targetSdk`/`compileSdk` 35.
+- `minSdk` 22, `targetSdk`/`compileSdk` 35.
 - Requires `SEND_SMS`, `READ_PHONE_NUMBERS`, `READ_PHONE_STATE`.
 
 ## Disclaimer
